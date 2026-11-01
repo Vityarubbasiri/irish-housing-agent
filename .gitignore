@@ -13,3 +13,6 @@ __pycache__/
 
 # Secret keys (for later)
 .env
+
+# Python packaging build files
+*.egg-info/
