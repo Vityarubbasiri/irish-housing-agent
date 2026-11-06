@@ -30,9 +30,13 @@ Audience: recruiters and hiring managers for data scientist roles in Ireland.
 3. Flag (do NOT remove) near-duplicates: same date + address + price but another column differs → `is_possible_duplicate`.
 4. Map Description of Property to `property_type` = "New" / "Second-Hand". Irish versions: "Teach/Árasán Cónaithe Atháimhe" = Second-Hand; anything containing "Nua" = New (includes one broken-encoding row).
 5. VAT: where vat_exclusive == "Yes", add 13.5% → `price_incl_vat`. Otherwise price_incl_vat = price.
-   Do NOT add VAT where property_type == "New" and vat_exclusive == "No" — flag those as `is_new_no_vat` (2,387 rows, odd/cheap).
-6. Flag `is_bulk_suspect`: price > €5,000,000 OR address contains bulk keywords (apartments, apts, block, folio, "& others", unit ranges like "1-150").
-7. Flag `is_low_price_suspect`: price < €20,000.
+   Do NOT add VAT where property_type == "New" and vat_exclusive == "No" — flag those as `is_new_no_vat` (2,377 rows, odd/cheap).
+   (2,387 in the raw file; 10 of those are exact duplicates removed by rule 2.)
+6. Flag `is_bulk_suspect`: price_incl_vat > €5,000,000 OR address matches a bulk pattern (case-insensitive, whole words):
+   - "blocks" (plural), "units" (plural), "& others" / "and others"
+   - a number range covering 3+ numbers (e.g. "1-3", "1-150"), UNLESS the address starts with a single "Apt / Apartment / Flat / Unit + number" (one home in a building with a ranged street number, e.g. "Apartment 9, 1-4 Sussex Street").
+   Do NOT use singular "apartment", "apt", "block", nor "apartments", "apts", "folio" — checked on real data, they mostly flag ordinary single homes (development names, block letters, folio-described properties).
+7. Flag `is_low_price_suspect`: price_incl_vat < €20,000.
 8. Keep `not_full_market_price` as a boolean.
 9. Add `is_model_eligible` = not any of: not_full_market_price, is_bulk_suspect, is_low_price_suspect, is_new_no_vat.
    Never delete flagged rows — only exclude them in analysis/modelling.
